@@ -1,0 +1,25 @@
+# Configuració de la cursa
+
+title = "Configuració d'una simulació a LogiCursa"
+
+[editor]
+nom = "Hugo Ballesteros Mañes"
+
+[simulacio]
+
+# Factor de velocitat pel qual emetem la simulació
+# Un factor d'1 indica igual a la velocitat real
+factor_velocitat = 10
+
+# Nombre de participants a simular
+# un 1 indica utilitzar el GPX directament
+nombre_participants = 25
+
+# Per baixar la resolució
+# Mínim de temps a transcorrer entre senyals
+minim_temps_entre_senyals = 5
+
+# Identificador alfanumèric de la cursa
+# aquest serà per repartir a tot arreu, pot ser públic
+# màxim de 10 caràcters
+identificador_cursa = "UOCTFG1"
