@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta name="viewport"
+        content="height=device-height, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link href='https://fonts.googleapis.com/css?family=Akshar' rel='stylesheet'>
+
+
+    <!-- Inclusió del BOOTSTRAP -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <script src='bootstrap/js/bootstrap.min.js'></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+
+
+    <title>Logicursa - Classificaci&oacute</title>
+    <style>
+        body {
+            font-family: 'Akshar', sans-serif;
+            margin: 0;
+            padding: 0;
+
+            filter: blur(10px);
+            transition: filter 0.25s;
+        }
+
+        #table-container {
+            height: 80vh;
+            overflow-y: scroll;
+            padding: 0;
+            margin: 0;
+
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Barra de navegació -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="media/logicursa_logo_banner.png" alt="" height="50dvh" class="d-inline-block align-text-top">
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse border-bottom border-primary" id="navbarNav">
+                <ul class="navbar-nav p-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-globe-americas align-middle" style="font-size: 1em; color:green"></i>
+                            MAPA
+                        </a>
+                    </li>
+                    <li class="nav-item h1">
+                        <a class="nav-link active" href="classificacio.html">
+                            <i class="bi bi-list-ol align-middle" style="font-size: 2em; color: indigo"></i>
+                            <strong>CLASSIFICACI&Oacute</strong>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="punts_interes.html">
+                            <i class="bi bi-binoculars-fill align-middle" style="font-size: 1em; color:blue"></i>
+                            PUNTS D'INTER&EgraveS
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+
+        </div>
+    </nav>
+
+    <div id="temps_transcorregut"></div>
+
+    <div id="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Posici&oacute;</th>
+                    <th>Velocitat</th>
+                    <th>Dist&agravencia realitzada</th>
+                    <th>Dist&agravencia a meta</th>
+                </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+    <script>
+
+        var temps_transcorregut_de_cursa = "00:00:00";
+
+        // Realitzar la crida REST API y omplir la taula amb les dades obtingudes
+        function fetchData() {
+            fetch('http://red-interna.lechuga.eu:3000/clasificacio_consumer_out')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('table-body');
+
+                    tableBody.innerHTML = '';
+                    console.log("Numero de filas recuperadas: " + data.length);
+
+                    data.forEach(rowData => {
+                        const row = document.createElement('tr');
+
+                        // Primer columna que ocupa 2 files: Posició
+                        const puestoCell = document.createElement('td');
+                        puestoCell.setAttribute("rowspan", 2);
+                        puestoCell.style.fontSize = "2em";
+
+                        // Si aquest particp. ja ha arribat a meta (a_meta),
+                        // Fons verd, número i hora d'arribada (a_meta_dt)
+                        if (!rowData.a_meta) {
+                            // No han arribat a meta, col·loració normal
+                            puestoCell.textContent = rowData.posicio_actual;
+
+                            if (rowData.posicio_actual == 1) {
+                                puestoCell.style.color = "White";
+                                puestoCell.style.backgroundColor = "Red";
+                            } else {
+                                puestoCell.style.backgroundColor = "White";
+                            }
+
+                            // Aprofitem per obtenir el temps transcorregut
+                            // Serà d'aquells que encara no han arribat a la meta
+                            if (rowData.darrer_refresc > temps_transcorregut_de_cursa) {
+                                temps_transcorregut_de_cursa = rowData.darrer_refresc;
+                            }
+                            
+                            
+
+                        } else {
+                            // Ja ha arribat a meta
+                            puestoCell.innerHTML = "<h1>" + rowData.posicio_actual + "</h1>arribada: <br><b>" + rowData.a_meta_dt.slice(-8) + "</b>";
+                            puestoCell.style.fontSize = "1em";
+                            if (rowData.posicio_actual == 1) {
+                                puestoCell.innerHTML = "<i class=\"bi bi-flag-fill align-middle\" style=\"font-size: 1em; color:red\"></i>" + puestoCell.innerHTML
+                                puestoCell.style.backgroundColor = "#98fb98";
+                            } else if (rowData.posicio_actual == 2) {
+                                puestoCell.style.backgroundColor = "#ffd700";
+                            } else if (rowData.posicio_actual == 3) {
+                                puestoCell.style.backgroundColor = "#FFDAB9";
+                            }
+
+                        }
+
+                        row.appendChild(puestoCell);
+
+
+                        // Primera fila: identificació del participan
+                        nombreCell = document.createElement('td');
+                        nombreCell.setAttribute("colspan", 3);
+
+                        if (rowData.posicio_actual == 1) {
+                            nombreCell.style.color = "White";
+                            nombreCell.style.backgroundColor = "Red";
+                        } else {
+                            nombreCell.style.backgroundColor = "#DDDDDD";
+                        }
+                        nombreCell.textContent = rowData.participant_identificacio;
+
+
+                        row.appendChild(nombreCell);
+
+                        // Dades del participant
+                        const subrow = document.createElement('tr');
+
+                        const velocitatCell = document.createElement('td');
+                        velocitatCell.textContent = rowData.velocitat_mitjana_kmh_total.toString() + " km/h";
+
+                        const distancia_realitzadaCell = document.createElement('td');
+                        distancia_realitzadaCell.textContent = rowData.distancia_realitzada.toString() + " m";
+
+                        const distancia_pendentCell = document.createElement('td');
+                        distancia_pendentCell.textContent = rowData.distancia_pendent.toString() + " m";
+
+                        subrow.appendChild(velocitatCell);
+                        subrow.appendChild(distancia_realitzadaCell);
+                        subrow.appendChild(distancia_pendentCell);
+
+                        tableBody.appendChild(row);
+                        tableBody.appendChild(subrow);
+                    });
+                });
+            // Actualitzem el temps transcorregut de cursa
+            document.getElementById("temps_transcorregut").innerHTML = "Temps transcorregut de cursa: " + temps_transcorregut_de_cursa;
+            document.getElementById("temps_transcorregut").classList = "text-center bg-success text-white";
+
+
+        };
+
+        fetchData();
+        setInterval(fetchData, 1000);
+    </script>
+
+    <script>
+        window.addEventListener('load', function () {
+            // Treiem el difuminat
+            setTimeout(function () {
+                document.body.style.filter = 'none';
+            }, 500);
+        });
+    </script>
+
+</body>
+
+</html>

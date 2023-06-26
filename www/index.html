@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+
+
+
+<head>
+	<title>Logicursa - Mapa</title>
+
+	<!--  Bootstrap  
+	<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<script src='bootstrap/js/bootstrap.min.js'></script> -->
+
+	<!-- Inclusió del BOOTSTRAP -->
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<script src='bootstrap/js/bootstrap.min.js'></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+		rel="stylesheet">
+
+	<!-- Mòdul Leaflet -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+		integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+	<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+		integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+
+	<meta name="viewport"
+		content="height=device-height, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+	<link href='https://fonts.googleapis.com/css?family=Akshar' rel='stylesheet'>
+
+	<style>
+		body {
+			font-family: 'Akshar', sans-serif;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+
+			filter: blur(10px);
+			transition: filter 0.25s;
+		}
+
+		#taula-participants {
+
+			overflow-y: scroll;
+		}
+
+		table {
+			/*font-family: "Akshar" , sans-serif;*/
+			width: 100%;
+			border-collapse: collapse;
+			padding: 0;
+			margin: 0
+		}
+
+		th,
+		td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: center;
+		}
+
+		th {
+			background-color: #f2f2f2;
+			position: sticky;
+			top: 0;
+		}
+	</style>
+
+</head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+
+<!-- Plugin Leaflet.awesome-markers  -->
+<link rel="stylesheet" href="../dist/leaflet.awesome-markers.css">
+<script src="../dist/leaflet.awesome-markers.js"></script>
+
+
+<body>
+	<!-- Barra de navegació -->
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="#">
+				<img src="media/logicursa_logo_banner.png" alt="" height="50dvh" class="d-inline-block align-text-top">
+			</a>
+
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+				aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse border-bottom border-primary" id="navbarNav">
+				<ul class="navbar-nav p-1">
+					<li class="nav-item h1">
+						<a class="nav-link active" href="index.html">
+							<i class="bi bi-globe-americas align-middle" style="font-size: 2em; color:green"></i>
+							<strong>MAPA</strong>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="classificacio.html">
+							<i class="bi bi-list-ol align-middle" style="font-size: 1em; color: indigo"></i>
+							CLASSIFICACI&Oacute
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="punts_interes.html">
+							<i class="bi bi-binoculars-fill align-middle" style="font-size: 1em; color:blue"></i>
+							PUNTS D'INTER&EgraveS
+						</a>
+					</li>
+				</ul>
+			</div>
+
+		</div>
+	</nav>
+
+	<div id="temps_transcorregut"></div>
+
+	<div id="map" style="height: 60dvh"></div>
+
+	<div id="taula-participants" style="height: 40dvh">
+		<table>
+			<thead>
+				<tr>
+					<th>Posici&oacute</th>
+					<th>Dorsal i nom</th>
+				</tr>
+			</thead>
+			<tbody id="table-body"></tbody>
+		</table>
+	</div>
+
+	<script type="text/javascript">
+
+		const map = L.map('map');
+
+		L.control.scale().addTo(map);
+
+		const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 25,
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+		}).addTo(map);
+
+
+		// Afegim un polyline amb el recorregut de la cursa
+
+		$.ajax({
+			url: 'http://red-interna.lechuga.eu:3000/recorreguts',
+			type: 'GET',
+			dataType: 'json',
+			success: function (data) {
+				var coordenadas = [];
+				for (var i = 0; i < data.length; i++) {
+					var latLng = L.latLng(data[i].location_y, data[i].location_x);
+					coordenadas.push(latLng);
+				}
+				var polilinea = L.polyline(coordenadas).addTo(map);
+				map.fitBounds(polilinea.getBounds());
+			}
+		});
+
+		// Afegim els punts d'interès de la cursa
+		var punts_interes = L.layerGroup();
+		var etiquetes_punts_interes = L.layerGroup();
+		$.ajax({
+			url: 'http://red-interna.lechuga.eu:3000/punts_interes',
+			type: 'GET',
+			dataType: 'json',
+			success: function (data) {
+				const fontAwesomeIcon = L.divIcon({
+					html: '<i class="bi bi-box-arrow-up-left"></i>',
+					iconSize: [60, 60],
+					className: 'divIconArribada'
+				});
+
+				for (var i = 0; i < data.length; i++) {
+
+					descripcio_punt_interes = "#" + data[i].num.toString() + " - " + data[i].descripcio;
+
+					if (data[i].tipus.trim() == "panoramica") {
+						var punto = L.marker([data[i].location_y, data[i].location_x],
+							{
+								icon: L.AwesomeMarkers.icon({
+									icon: 'bi bi-binoculars',
+									prefix: 'glyphicon', markerColor: 'blue'
+								})
+							});
+						punts_interes.addLayer(punto);
+
+					} else if (data[i].tipus.trim() == "sortida") {
+						var punto = L.marker([data[i].location_y, data[i].location_x],
+							{
+								icon: L.AwesomeMarkers.icon({
+									icon: 'flag',
+									prefix: 'glyphicon',
+									markerColor: 'green'
+								})
+							});
+						punts_interes.addLayer(punto);
+
+					} else if (data[i].tipus.trim() == "arribada") {
+						var punto = L.marker([data[i].location_y, data[i].location_x],
+							{
+								icon: L.AwesomeMarkers.icon({
+									icon: 'bi bi-box-arrow-up-left',
+									prefix: 'glyphicon',
+									markerColor: 'red'
+								})
+							});
+						punts_interes.addLayer(punto);
+					}
+
+
+
+					var etiqueta = L.tooltip([data[i].location_y, data[i].location_x],
+						{
+							content: descripcio_punt_interes,
+							permanent: true,
+							opacity: 0.9
+						}
+					);
+					etiquetes_punts_interes.addLayer(etiqueta);
+
+				}
+				map.addLayer(punts_interes);
+			}
+		});
+
+		// Afegim els punts dels participants ******************************
+		var punts_participants = L.layerGroup();
+		var etiquetes_participants = L.layerGroup();
+		var temps_transcorregut_de_cursa = "00:00:00";
+		function renovar_logicursa() {
+
+			resultat_fetch = fetch('http://red-interna.lechuga.eu:3000/clasificacio_consumer_out').then(response => response.json())
+
+			// Actualització de la mini taula
+			resultat_fetch
+				.then(data => {
+					const tableBody = document.getElementById('table-body');
+
+					tableBody.innerHTML = ''; // Eliminar filas previas
+
+					data.forEach(rowData => {
+						const row = document.createElement('tr');
+
+						const puestoCell = document.createElement('td');
+
+						if (!rowData.a_meta) {
+							puestoCell.textContent = rowData.posicio_actual;
+						} else {
+							// Ja ha arribat a meta
+							puestoCell.innerHTML = rowData.posicio_actual + " arribada: <b>" + rowData.a_meta_dt.slice(-8) + "</b>";
+							if (rowData.posicio_actual == 1) {
+								puestoCell.innerHTML = "<i class=\"bi bi-flag-fill align-middle\" style=\"font-size: 1em; color:red\"></i>" + puestoCell.innerHTML
+								puestoCell.style.backgroundColor = "#98fb98";
+							} else if (rowData.posicio_actual == 2) {
+								puestoCell.style.backgroundColor = "#ffd700";
+							} else if (rowData.posicio_actual == 3) {
+								puestoCell.style.backgroundColor = "#FFDAB9";
+							}
+
+						}
+
+						const nombreCell = document.createElement('td');
+						nombreCell.textContent = rowData.participant_identificacio;
+
+						row.appendChild(puestoCell);
+						row.appendChild(nombreCell);
+						tableBody.appendChild(row);
+
+						// Afegim un escoltador per poder fer clic a les files
+						row.addEventListener('click', () => {
+							// Centrar el mapa en las coordenadas
+							map.setView([rowData.location_y, rowData.location_x], 22);
+							map.zoomOut(3);
+
+						});
+
+					});
+				});
+
+			// Actualització dels punts
+
+			resultat_fetch
+				.then(data => {
+
+					data.reverse();
+
+					punts_participants.clearLayers();
+					etiquetes_participants.clearLayers();
+
+					// Recollim les coordenades dels participants
+					// així com els seus noms en un array
+
+					const posicions_agregades = {};
+					data.forEach(rowData => {
+						const { location_x, location_y, participant_identificacio, posicio_actual } = rowData;
+						const ubicacio = `${location_x},${location_y}`;
+
+						if (!posicions_agregades.hasOwnProperty(ubicacio)) {
+							// No tenim aquesta coordenada, en fem una de nova
+							posicions_agregades[ubicacio] = [];
+							// Les coordenades les fiquem una vegada
+							posicions_agregades[ubicacio].push({ location_x, location_y });
+						}
+
+						// Fiquem les característiques d'aquest punt
+						posicions_agregades[ubicacio].push({ posicio_actual, participant_identificacio });
+
+						// Aprofitem per obtenir el temps transcorregut
+						// Serà d'aquells que encara no han arribat a la meta
+						if (rowData.darrer_refresc > temps_transcorregut_de_cursa) {
+							temps_transcorregut_de_cursa = rowData.darrer_refresc;
+						}
+
+					});
+
+
+					// Preparem les posicions per representar-les al mapa
+					for (const posicio_actual in posicions_agregades) {
+						// Iteració de primer nivell - conjunt de posicions
+
+						// El primer objecte sempre es la posició
+						const { location_x, location_y } = Object.entries(posicions_agregades[posicio_actual])[0][1]
+
+						// Cerquem si en aquesta posició tenim el primer clasificat
+						es_cap_de_cursa = false;
+						for (let i = 1; i < Object.keys(posicions_agregades[posicio_actual]).length; i++) {
+							if (Object.values(posicions_agregades[posicio_actual])[i].posicio_actual == 1) {
+								// Es un cap de cursa
+								es_cap_de_cursa = true;
+							}
+						}
+
+						posicions_agregades[posicio_actual].push({ "es_cap_de_cursa": es_cap_de_cursa });
+
+						// Agrupem tots els participants en una sola etiqueta
+						var etiqueta_actual = "";
+
+						for (let i = (Object.keys(posicions_agregades[posicio_actual]).length - 2); i >= 1; i--) {
+							// i = 1 -> ens saltem les coordenades
+							// ...length-1 -> Evitem el darrer element que és booleà cap de cursa
+
+							if (posicions_agregades[posicio_actual][i].posicio_actual == 1) {
+								// es un cap de cursa, destaquem a l'etiqueta
+								etiqueta_actual += "<b style=\"color:red\">" + posicions_agregades[posicio_actual][i].participant_identificacio + "</b></br>";
+							} else {
+								etiqueta_actual += posicions_agregades[posicio_actual][i].participant_identificacio + "</br>";
+							}
+
+						}
+						posicions_agregades[posicio_actual].push({ "etiqueta": etiqueta_actual });
+
+						// Afegim les coordenades agregades al mapa
+
+						if (posicions_agregades[posicio_actual].slice(-2)[0].es_cap_de_cursa) {
+							// Es un primer classificat
+							var punt_participant = L.marker([posicions_agregades[posicio_actual][0].location_y, posicions_agregades[posicio_actual][0].location_x],
+								{
+									icon: L.AwesomeMarkers.icon({
+										icon: 'bi bi-1-circle-fill',
+										prefix: 'glyphicon', markerColor: 'red'
+									})
+								});
+						} else {
+							// Resta de participants
+							var punt_participant = L.marker([posicions_agregades[posicio_actual][0].location_y, posicions_agregades[posicio_actual][0].location_x],
+								{
+									icon: L.AwesomeMarkers.icon({
+										icon: 'bi bi-person-fill',
+										prefix: 'glyphicon', markerColor: 'purple'
+									})
+								});
+						}
+
+						var etiqueta_participant = L.tooltip([posicions_agregades[posicio_actual][0].location_y, posicions_agregades[posicio_actual][0].location_x], { content: posicions_agregades[posicio_actual].slice(-2)[1].etiqueta, permanent: true, className: "leaflet-tooltip-participants", opacity: 0.9, offset: [+10, +10] });
+
+						etiquetes_participants.addLayer(etiqueta_participant);
+						punts_participants.addLayer(punt_participant);
+					}
+
+					// No afegim aquí les etiquetes ja que depèn del zoom que estiguem actualment
+					map.addLayer(punts_participants);
+
+
+					// Actualitzem el temps transcorregut de cursa
+					document.getElementById("temps_transcorregut").innerHTML = "Temps transcorregut de cursa: " + temps_transcorregut_de_cursa;
+					document.getElementById("temps_transcorregut").classList = "text-center bg-success text-white";
+
+				});
+
+
+		};
+
+		setInterval(renovar_logicursa, 1000);
+
+		// Events al mapa
+
+		// Amaga etiquetes segons l'escala del mapa
+		var min_zoom_per_tooltips_punts_interes = 16;
+		var min_zoom_per_tooltips_participants = 19;
+
+		map.on('zoomend', function () {
+			// Cada vegada que es modifica l'escala del mapa
+			// avaluem què mostrem i què amagem
+
+			var currentZoom = map.getZoom();
+
+			console.log("zoom actual " + currentZoom);
+
+			// Mostrar o amagar els tooltips dels punts d'interès segons l'escala
+			if (currentZoom >= min_zoom_per_tooltips_punts_interes) {
+				etiquetes_punts_interes.addTo(map)
+			} else {
+				etiquetes_punts_interes.removeFrom(map)
+			}
+
+			// Mostrar o amagar els tooltips dels punts del participants
+			if (currentZoom >= min_zoom_per_tooltips_participants) {
+				etiquetes_participants.addTo(map)
+			} else {
+				etiquetes_participants.removeFrom(map)
+			}
+
+
+		})
+
+	</script>
+
+	<script>
+		window.addEventListener('load', function () {
+			// Treiem el difuminat
+			setTimeout(function () {
+				document.body.style.filter = 'none';
+			}, 500);
+		});
+	</script>
+
+
+</body>
+
+</html>

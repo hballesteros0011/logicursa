@@ -1,0 +1,38 @@
+/* STYLESHEET per la barra de navegació ******************************** */
+#navbar ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: #000;
+	/*display: flex;
+	justify-content: space-between;*/
+}
+
+#navbar li {
+	float: left;
+	border-right: 1px solid #bbb;
+	/* display: flex;*/
+	/* Agregado para centrar el texto */
+	/*align-items: center;*/
+	/* Agregado para centrar el texto */
+}
+
+#navbar li:hover {
+	background-color: white;
+}
+
+#navbar li a {
+	display: block;
+	color: white;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+}
+
+
+
+.active {
+	background-color: #555
+}
+/* FI DE STYLESHEET per la barra de navegació ******************************** */

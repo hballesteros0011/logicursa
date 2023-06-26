@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta name="viewport"
+        content="height=device-height, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link href='https://fonts.googleapis.com/css?family=Akshar' rel='stylesheet'>
+
+    <!-- Inclusió del BOOTSTRAP -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <script src='bootstrap/js/bootstrap.min.js'></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+
+
+    <title>Logicursa - Punts d'inter&egraves</title>
+    <style>
+        body {
+            font-family: 'Akshar', sans-serif;
+            margin: 0;
+            padding: 0;
+
+            filter: blur(10px);
+            transition: filter 0.25s;
+
+        }
+
+        #table-container {
+            height: 80vh;
+            overflow-y: scroll;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Barra de navegació -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="media/logicursa_logo_banner.png" alt="" height="50dvh" class="d-inline-block align-text-top">
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse border-bottom border-primary" id="navbarNav">
+                <ul class="navbar-nav p-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-globe-americas align-middle" style="font-size: 1em; color:green"></i>
+                            MAPA
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="classificacio.html">
+                            <i class="bi bi-list-ol align-middle" style="font-size: 1em; color: indigo"></i>
+                            CLASSIFICACI&Oacute
+                        </a>
+                    </li>
+                    <li class="nav-item h1">
+                        <a class="nav-link active" href="punts_interes.html">
+                            <i class="bi bi-binoculars-fill align-middle" style="font-size: 2em; color:blue"></i>
+                            <strong>PUNTS D'INTER&EgraveS</strong>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+
+    <div id="temps_transcorregut"></div>
+
+    <div id="table-container">
+        <table>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+
+    <script>
+        var temps_transcorregut_de_cursa = "00:00:00";
+
+        function escapeHTML(unsafe) {
+            return unsafe.replace(/[\u0000-\u002F\u003A-\u0040\u005B-\u0060\u007B-\u00FF]/g, c => '&#' + ('000' + c.charCodeAt(0)).slice(-4) + ';')
+        }
+
+        // Realitzar la crida REST API y omplir la taula amb les dades obtingudes
+        function fetchData() {
+            fetch('http://red-interna.lechuga.eu:3000/estat_punts_interes_consumer_out')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('table-body');
+
+                    tableBody.innerHTML = '';
+
+                    var punt_interes_actual = '';  // Per forçar l'inici de les capçaleres
+
+                    data.forEach(rowData => {
+
+
+                        if (rowData.punt_interes_descripcio != punt_interes_actual) {
+                            // Es un nou punt d'interès, fem capçalera
+
+                            const capcalera = document.createElement('tr');
+
+                            punt_interes_actual = rowData.punt_interes_descripcio;
+
+                            const punt_interes_actual_Cell = document.createElement('th');
+                            punt_interes_actual_Cell.setAttribute("colspan", 2);
+                            punt_interes_actual_Cell.textContent = rowData.punt_interes_descripcio;
+                            capcalera.appendChild(punt_interes_actual_Cell);
+                            tableBody.appendChild(capcalera);
+
+
+                            const row_subcapcalera = document.createElement('tr');
+                            const subcalcalera1_Cell = document.createElement('th');
+                            subcalcalera1_Cell.textContent = "Participant";
+                            row_subcapcalera.appendChild(subcalcalera1_Cell);
+
+
+                            const subcalcalera2_Cell = document.createElement('th');
+                            subcalcalera2_Cell.innerHTML = "Dist\&agravencia (m)";
+                            row_subcapcalera.appendChild(subcalcalera2_Cell);
+
+                            tableBody.appendChild(row_subcapcalera);
+
+                        }
+
+                        // Afegim el participant
+                        const row = document.createElement('tr');
+
+                        const participant_identificacio_Cell = document.createElement('td');
+                        participant_identificacio_Cell.textContent = rowData.participant_identificacio;
+                        row.appendChild(participant_identificacio_Cell);
+
+                        const distancia_a_punt_interes_Cell = document.createElement('td');
+                        distancia_a_punt_interes_Cell.textContent = rowData.distancia_a_punt_interes;
+                        row.appendChild(distancia_a_punt_interes_Cell);
+
+                        tableBody.appendChild(row);
+
+                        // Aprofitem per obtenir el temps transcorregut
+                        // Serà d'aquells que encara no han arribat a la meta
+                        if (rowData.darrer_refresc > temps_transcorregut_de_cursa) {
+                            temps_transcorregut_de_cursa = rowData.darrer_refresc;
+                        }
+
+
+                    });
+                    // Actualitzem el temps transcorregut de cursa
+                    document.getElementById("temps_transcorregut").innerHTML = "Temps transcorregut de cursa: " + temps_transcorregut_de_cursa;
+                    document.getElementById("temps_transcorregut").classList = "text-center bg-success text-white";
+                });
+
+        };
+
+        fetchData();
+        setInterval(fetchData, 1000);
+    </script>
+
+    <script>
+        window.addEventListener('load', function () {
+            // Treiem el difuminat
+            setTimeout(function () {
+                document.body.style.filter = 'none';
+            }, 500);
+        });
+    </script>
+
+</body>
+
+</html>
