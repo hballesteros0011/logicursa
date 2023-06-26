@@ -1,0 +1,12 @@
+"";"cursa_id";"num";"descripcio";"location_x";"location_y";"tipus";"ordre_punt_recorregut"
+"1";"UOCTFG1";1;"INICI CURSA";-3,802528;37,7780921;"sortida";1
+"2";"UOCTFG1";2;"AV. ANDALUCÍA";-3,7917972;37,777138;"panoramica";192
+"3";"UOCTFG1";3;"AV. MADRID";-3,7857125;37,775555;"panoramica";384
+"4";"UOCTFG1";4;"AV. GRANADA";-3,7841141;37,76866;"panoramica";576
+"5";"UOCTFG1";5;"FUENTE DE DON DIEGO";-3,7883413;37,763645;"panoramica";768
+"6";"UOCTFG1";6;"JESÚS";-3,7936325;37,76308;"panoramica";960
+"7";"UOCTFG1";7;"VIRGEN DE LA CAPILLA";-3,7870598;37,768364;"panoramica";1152
+"8";"UOCTFG1";8;"BALBOA";-3,7938268;37,77383;"panoramica";1344
+"9";"UOCTFG1";9;"CONDESTABLE IRANZO";-3,8003721;37,776844;"panoramica";1536
+"10";"UOCTFG1";10;"SEFARAD";-3,7919822;37,77661;"panoramica";1708
+"11";"UOCTFG1";11;"ARRIBADA";-3,8023853;37,77817;"arribada";1926

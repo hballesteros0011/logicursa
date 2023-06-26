@@ -1,0 +1,13 @@
+# Configuració del processador
+
+title = "Configuració del processador de LogiCursa"
+
+
+[processador]
+
+# fitxer de configuració propi de la cursa
+DIRECTORI_BASE_CURSA = "configuracio_cursa"
+FITXER_CONFIGURACIO_CURSA = "configuracio.tom"
+
+# Interval de segons del pooling de dades del servidor
+INTERVAL_INGESTA_BBDD = 2

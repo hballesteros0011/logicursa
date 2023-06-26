@@ -1,0 +1,44 @@
+# Configuració de de la preparació de la cursa
+
+# Fitxer d'usuaris
+
+[fitxers_usuari]
+FITXER_BASE_RECORREGUT = "fitxers_usuari//recorregut_cursa_raw.gpx"
+
+# Fitxer de punts d'interès, preparat manualment
+# sortida -> La sortida
+# arribada -> L'arribada
+# pano -> Lloc d'interès per observar la cursa
+FITXER_POIS = "fitxers_usuari//punts_interes_cursa.ods"
+
+
+# Fitxer de participants preparat manualment
+FITXER_BASE_PARTICIPANTS = "fitxers_usuari//participants.ods"
+
+# Fitxer de mostra de recorregut de participant per probar les configuracions
+FITXER_PARTICIPANT_MOSTRA = "fitxers_usuari//gps_participant_mostra.gpx"
+
+[dades_cursa]
+
+# Identificador alfanumèric de la cursa
+# aquest serà per repartir a tot arreu, pot ser públic
+# màxim de 10 caràcters
+identificador_cursa = "UOCTFG1"
+
+# Sistema de coordenades emprades als fitxers
+CRS="EPSG:4326"
+
+[configuracio_sistema]
+# distància en metres per la interpolació
+RESOLUCIO_INTERPOLACIO = 5
+
+# distància mínima entre vèrtexs del recorregut processat, en metres
+# vertex més junts, s'elimina un d'ells
+DISTANCIA_MINIMA_VERTEXS = 1
+
+# Fitxer de recorregut preparat pel procés "configuracio_cursa"
+FITXER_RECORREGUT = "recorregut_cursa.csv"
+
+# Metres al voltant de la meta que considerem arribada
+# ha de ser suficient per cobrir el HDOP del GPS
+DISTANCIA_PRE_META = 25
